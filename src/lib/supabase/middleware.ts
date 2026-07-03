@@ -1,13 +1,27 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PROTECTED_PATHS = ["/dashboard", "/calendar", "/pins", "/settings"];
+
+function isProtectedPath(pathname: string): boolean {
+  return PROTECTED_PATHS.some((path) => pathname.startsWith(path));
+}
+
 export async function updateSession(request: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    if (isProtectedPath(request.nextUrl.pathname)) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -22,30 +36,33 @@ export async function updateSession(request: NextRequest) {
           );
         },
       },
+    });
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (isProtectedPath(request.nextUrl.pathname) && !user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("redirect", request.nextUrl.pathname);
+      return NextResponse.redirect(url);
     }
-  );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    if (request.nextUrl.pathname === "/login" && user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
 
-  const protectedPaths = ["/dashboard", "/calendar", "/pins", "/settings"];
-  const isProtected = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  );
+    return supabaseResponse;
+  } catch (error) {
+    console.error("Middleware auth error:", error);
 
-  if (isProtected && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("redirect", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+    if (isProtectedPath(request.nextUrl.pathname)) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    return NextResponse.next({ request });
   }
-
-  if (request.nextUrl.pathname === "/login" && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
-
-  return supabaseResponse;
 }
