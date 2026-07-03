@@ -13,6 +13,30 @@ function getPinterestApiBase(): string {
   return process.env.PINTEREST_API_BASE || "https://api.pinterest.com";
 }
 
+function parsePinterestApiError(status: number, body: string): string {
+  try {
+    const parsed = JSON.parse(body) as { code?: number; message?: string };
+    if (parsed.code === 3) {
+      return (
+        "Pinterest app is not approved for Trial access yet. " +
+        "Go to developers.pinterest.com → My apps → request Trial access " +
+        "(requires privacy policy URL). Then regenerate your sandbox token."
+      );
+    }
+    if (parsed.message) {
+      return `Pinterest API error (${status}): ${parsed.message}`;
+    }
+  } catch {
+    // fall through
+  }
+  return `Pinterest API error (${status}): ${body}`;
+}
+
+async function readPinterestError(response: Response): Promise<string> {
+  const body = await response.text();
+  return parsePinterestApiError(response.status, body);
+}
+
 function getBasicAuthHeader(): string {
   const clientId = process.env.PINTEREST_CLIENT_ID!;
   const clientSecret = process.env.PINTEREST_CLIENT_SECRET!;
@@ -123,7 +147,7 @@ export async function getPinterestUser(accessToken: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch Pinterest user: ${await response.text()}`);
+    throw new Error(await readPinterestError(response));
   }
 
   return response.json() as Promise<{ username?: string }>;
@@ -135,7 +159,7 @@ export async function syncBoards(userId: string, accessToken: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch boards: ${await response.text()}`);
+    throw new Error(await readPinterestError(response));
   }
 
   const data = (await response.json()) as {
@@ -168,8 +192,15 @@ export async function connectSandboxAccount(userId: string) {
     throw new Error("Sandbox token connect requires PINTEREST_API_BASE sandbox URL");
   }
 
-  const pinterestUser = await getPinterestUser(accessToken);
   const tokenExpiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+  let username = "sandbox";
+
+  try {
+    const pinterestUser = await getPinterestUser(accessToken);
+    username = pinterestUser.username ?? "sandbox";
+  } catch {
+    // Sandbox tokens often cannot call user_account before Trial approval.
+  }
 
   const supabase = createServiceClient();
   await supabase.from("pinterest_accounts").upsert(
@@ -178,13 +209,13 @@ export async function connectSandboxAccount(userId: string) {
       access_token: encrypt(accessToken),
       refresh_token: encrypt(SANDBOX_REFRESH_PLACEHOLDER),
       token_expires_at: tokenExpiresAt,
-      pinterest_username: pinterestUser.username ?? "sandbox",
+      pinterest_username: username,
     },
     { onConflict: "user_id" }
   );
 
   const boardCount = await syncBoards(userId, accessToken);
-  return { username: pinterestUser.username ?? "sandbox", boardCount };
+  return { username, boardCount };
 }
 
 export function isSandboxTokenConfigured(): boolean {
@@ -228,15 +259,14 @@ export async function publishPinToPinterest(
     body: JSON.stringify(body),
   });
 
-  if (response.status === 429) {
-    const error = new Error("Rate limited by Pinterest");
-    (error as Error & { isRateLimit: boolean }).isRateLimit = true;
-    throw error;
-  }
-
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Pinterest publish failed (${response.status}): ${errorText}`);
+    if (response.status === 429) {
+      const error = new Error("Rate limited by Pinterest");
+      (error as Error & { isRateLimit: boolean }).isRateLimit = true;
+      throw error;
+    }
+    throw new Error(parsePinterestApiError(response.status, errorText));
   }
 
   return response.json() as Promise<{ id: string }>;
