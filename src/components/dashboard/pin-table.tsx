@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Sparkles, Trash2 } from "lucide-react";
+import { Sparkles, Trash2, Pin as PinIcon } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,12 +14,17 @@ import type { PinWithBoard } from "@/types/database";
 interface PinTableProps {
   initialPins: PinWithBoard[];
   onRefresh: () => void;
+  highlightId?: string | null;
 }
 
-export function PinTable({ initialPins, onRefresh }: PinTableProps) {
+export function PinTable({ initialPins, onRefresh, highlightId }: PinTableProps) {
   const [pins, setPins] = useState(initialPins);
   const [generatingAll, setGeneratingAll] = useState(false);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+
+  useEffect(() => {
+    setPins(initialPins);
+  }, [initialPins]);
 
   async function updatePin(id: string, updates: Record<string, unknown>) {
     const res = await fetch(`/api/pins/${id}`, {
@@ -94,9 +100,12 @@ export function PinTable({ initialPins, onRefresh }: PinTableProps) {
 
   if (pins.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-12 text-center">
-        <p className="text-muted-foreground">No pins yet. Create your first pin to get started.</p>
-      </div>
+      <EmptyState
+        icon={PinIcon}
+        title="No pins yet"
+        description="Create your first pin to get started with AI-powered scheduling."
+        action={{ label: "Create pin", href: "/pins/new" }}
+      />
     );
   }
 
@@ -131,7 +140,10 @@ export function PinTable({ initialPins, onRefresh }: PinTableProps) {
           </thead>
           <tbody>
             {pins.map((pin) => (
-              <tr key={pin.id} className="border-b last:border-0">
+              <tr
+                key={pin.id}
+                className={`border-b last:border-0 ${highlightId === pin.id ? "bg-primary/5 ring-1 ring-primary/20" : ""}`}
+              >
                 <td className="px-4 py-3">
                   <div className="relative h-12 w-12 overflow-hidden rounded">
                     <Image

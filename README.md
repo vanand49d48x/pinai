@@ -1,4 +1,4 @@
-# pinai
+# PinAI
 
 AI-powered Pinterest pin scheduler. Upload or link pin images, generate SEO-optimized titles/descriptions/hashtags with Claude, and auto-publish to Pinterest at scheduled times.
 

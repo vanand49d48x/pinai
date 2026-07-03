@@ -27,6 +27,7 @@ export async function GET() {
   return NextResponse.json({
     account: account ?? null,
     boards: boards ?? [],
-    sandboxConnectAvailable: isSandboxTokenConfigured(),
+    sandboxConnectAvailable:
+      process.env.NEXT_PUBLIC_ENABLE_SANDBOX === "true" && isSandboxTokenConfigured(),
   });
 }

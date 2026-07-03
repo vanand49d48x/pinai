@@ -58,7 +58,7 @@ export default function LoginForm() {
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Pin className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle>Welcome to pinai</CardTitle>
+          <CardTitle>Welcome to PinAI</CardTitle>
           <CardDescription>Sign in to manage your Pinterest pins</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

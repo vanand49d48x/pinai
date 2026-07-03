@@ -1,20 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { rootMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "pinai — AI-Powered Pinterest Pin Scheduler",
-  description:
-    "Upload pins, generate SEO-optimized metadata with AI, and auto-publish to Pinterest on schedule.",
-  applicationName: "pinai",
-  icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
-  },
-};
+export const metadata: Metadata = rootMetadata;
 
 export default function RootLayout({
   children,

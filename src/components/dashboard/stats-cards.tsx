@@ -26,20 +26,23 @@ export function StatsCards({ pins }: StatsCardsProps) {
 
   const stats = [
     {
-      title: "Scheduled This Week",
+      title: "Scheduled this week",
       value: scheduledThisWeek,
+      hint: "Pins you schedule will show up here",
       icon: Calendar,
       color: "text-purple-600",
     },
     {
-      title: "Posted Total",
+      title: "Posted total",
       value: postedTotal,
+      hint: "Successfully published pins appear here",
       icon: CheckCircle,
       color: "text-emerald-600",
     },
     {
       title: "Failed",
       value: failedTotal,
+      hint: "Publishing errors will be listed here",
       icon: XCircle,
       color: "text-red-600",
     },
@@ -47,7 +50,7 @@ export function StatsCards({ pins }: StatsCardsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {stats.map(({ title, value, icon: Icon, color }) => (
+      {stats.map(({ title, value, hint, icon: Icon, color }) => (
         <Card key={title}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -55,6 +58,9 @@ export function StatsCards({ pins }: StatsCardsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{value}</div>
+            {value === 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+            )}
           </CardContent>
         </Card>
       ))}

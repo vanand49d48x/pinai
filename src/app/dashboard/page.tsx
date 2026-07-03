@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { PinTable } from "@/components/dashboard/pin-table";
 import { Button } from "@/components/ui/button";
@@ -17,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Pin, PinWithBoard } from "@/types/database";
 
 const STATUS_OPTIONS = [
-  { value: "all", label: "All Statuses" },
+  { value: "all", label: "All statuses" },
   { value: "draft", label: "Draft" },
   { value: "generating", label: "Generating" },
   { value: "ready", label: "Ready" },
@@ -26,7 +28,10 @@ const STATUS_OPTIONS = [
   { value: "failed", label: "Failed" },
 ];
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get("highlight");
+
   const [pins, setPins] = useState<PinWithBoard[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -47,16 +52,18 @@ export default function DashboardPage() {
   }, [fetchPins]);
 
   return (
-    <DashboardLayout>
+    <>
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Manage and schedule your Pinterest pins</p>
+          <p className="text-muted-foreground">Manage and schedule your pins</p>
         </div>
         <Button asChild>
-          <Link href="/pins/new">New Pin</Link>
+          <Link href="/pins/new">New pin</Link>
         </Button>
       </div>
+
+      <OnboardingChecklist />
 
       {loading ? (
         <div className="mb-8 grid gap-4 md:grid-cols-3">
@@ -70,7 +77,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="mb-4 flex items-center gap-4">
+      <div className="mb-4">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-48">
             <SelectValue />
@@ -88,8 +95,18 @@ export default function DashboardPage() {
       {loading ? (
         <Skeleton className="h-96" />
       ) : (
-        <PinTable initialPins={pins} onRefresh={fetchPins} />
+        <PinTable initialPins={pins} onRefresh={fetchPins} highlightId={highlightId} />
       )}
+    </>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <DashboardLayout>
+      <Suspense fallback={<Skeleton className="h-96" />}>
+        <DashboardContent />
+      </Suspense>
     </DashboardLayout>
   );
 }

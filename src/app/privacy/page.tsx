@@ -1,19 +1,16 @@
 import Link from "next/link";
-import { Pin } from "lucide-react";
+import { APP_NAME, COMPANY_NAME, SUPPORT_EMAIL } from "@/lib/brand";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { createMetadata } from "@/lib/metadata";
 
-export const metadata = {
-  title: "Privacy Policy — pinai",
-};
+export const metadata = createMetadata("Privacy");
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="mx-auto flex h-16 max-w-3xl items-center px-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-primary">
-            <Pin className="h-5 w-5" />
-            pinai
-          </Link>
+          <Link href="/" className="font-bold text-primary">{APP_NAME}</Link>
         </div>
       </header>
 
@@ -21,91 +18,69 @@ export default function PrivacyPage() {
         <h1 className="text-3xl font-bold">Privacy Policy</h1>
         <p className="mt-2 text-sm text-muted-foreground">Last updated: July 2, 2026</p>
 
-        <div className="prose prose-neutral mt-8 max-w-none space-y-6 text-sm leading-relaxed">
+        <div className="mt-8 space-y-6 text-sm leading-relaxed text-muted-foreground">
           <section>
-            <h2 className="text-lg font-semibold">Overview</h2>
-            <p>
-              pinai (&quot;we&quot;, &quot;our&quot;, &quot;the app&quot;) is a Pinterest pin scheduling
-              tool. This policy describes what data we collect and how we use it.
+            <h2 className="text-lg font-semibold text-foreground">Overview</h2>
+            <p className="mt-2">
+              {APP_NAME}, operated by {COMPANY_NAME}, is a Pinterest pin scheduling tool. This policy describes what
+              data we collect and how we use it.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">Information we collect</h2>
-            <ul className="list-disc space-y-2 pl-5">
-              <li>
-                <strong>Account information:</strong> email address when you sign in via magic link
-                or Google OAuth (handled by Supabase Auth).
-              </li>
-              <li>
-                <strong>Pin content:</strong> images you upload or link, titles, descriptions,
-                keywords, and scheduling data you provide.
-              </li>
-              <li>
-                <strong>Pinterest connection:</strong> OAuth access and refresh tokens, your
-                Pinterest username, and synced board names. Tokens are encrypted at rest.
-              </li>
+            <h2 className="text-lg font-semibold text-foreground">Information we collect</h2>
+            <ul className="mt-2 list-disc space-y-2 pl-5">
+              <li><strong>Account information:</strong> email address when you sign in (via Supabase Auth).</li>
+              <li><strong>Pin content:</strong> images, titles, descriptions, keywords, and scheduling data you provide.</li>
+              <li><strong>Pinterest connection:</strong> OAuth tokens (encrypted), username, and synced board names.</li>
+              <li><strong>Waitlist:</strong> email if you join our launch waitlist.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">How we use your data</h2>
-            <ul className="list-disc space-y-2 pl-5">
-              <li>Authenticate you and provide access to the app.</li>
-              <li>Store and display your pins and scheduling preferences.</li>
-              <li>Generate SEO metadata for pins using Anthropic Claude (image URL, topic, and keywords are sent to Anthropic&apos;s API).</li>
-              <li>Publish pins to Pinterest on your behalf at scheduled times.</li>
+            <h2 className="text-lg font-semibold text-foreground">How we use your data</h2>
+            <ul className="mt-2 list-disc space-y-2 pl-5">
+              <li>Authenticate you and provide the service.</li>
+              <li>Generate metadata via Anthropic Claude (image URL, topic, keywords sent to Anthropic).</li>
+              <li>Publish pins to Pinterest at scheduled times via the official API.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">Third-party services</h2>
-            <ul className="list-disc space-y-2 pl-5">
-              <li><strong>Supabase</strong> — authentication, database, and image storage.</li>
-              <li><strong>Anthropic</strong> — AI metadata generation from pin images and text.</li>
-              <li><strong>Pinterest</strong> — OAuth and pin publishing via the Pinterest API.</li>
-              <li><strong>Vercel</strong> — application hosting.</li>
+            <h2 className="text-lg font-semibold text-foreground">Third-party services</h2>
+            <ul className="mt-2 list-disc space-y-2 pl-5">
+              <li><strong>Supabase</strong> — auth, database, storage</li>
+              <li><strong>Anthropic</strong> — AI metadata generation</li>
+              <li><strong>Pinterest</strong> — OAuth and publishing</li>
+              <li><strong>Vercel</strong> — hosting</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">Data retention &amp; deletion</h2>
-            <p>
-              Your data is stored until you delete it or disconnect your account. You can delete
-              individual pins in the dashboard. Disconnecting Pinterest removes stored OAuth tokens.
-              Contact us to request full account deletion.
+            <h2 className="text-lg font-semibold text-foreground">Data retention &amp; deletion</h2>
+            <p className="mt-2">
+              Data is kept until you delete it or your account. Delete individual pins in the dashboard, disconnect
+              Pinterest in Settings, or delete your entire account (which removes all associated data).
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">Data sharing</h2>
-            <p>
-              We do not sell your personal data. Data is shared only with the third-party services
-              listed above, solely to operate the app.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold">Contact</h2>
-            <p>
-              For privacy questions, contact the app operator through the GitHub repository at{" "}
-              <a
-                href="https://github.com/vanand49d48x/pinai"
-                className="text-primary hover:underline"
-              >
-                github.com/vanand49d48x/pinai
+            <h2 className="text-lg font-semibold text-foreground">Contact</h2>
+            <p className="mt-2">
+              Privacy questions:{" "}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary hover:underline">
+                {SUPPORT_EMAIL}
               </a>
-              .
             </p>
           </section>
         </div>
 
         <p className="mt-12">
-          <Link href="/" className="text-sm text-primary hover:underline">
-            ← Back to home
-          </Link>
+          <Link href="/" className="text-sm text-primary hover:underline">← Back to home</Link>
         </p>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
