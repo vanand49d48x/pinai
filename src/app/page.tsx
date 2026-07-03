@@ -10,7 +10,7 @@ export default function LandingPage() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-2 font-bold text-primary">
             <Pin className="h-5 w-5" />
-            PicAI Scheduler
+            pinai
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" asChild>
@@ -56,7 +56,7 @@ export default function LandingPage() {
                 <Calendar className="mb-4 h-10 w-10 text-primary" />
                 <h3 className="text-lg font-semibold">Smart Scheduling</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Plan your content calendar with a visual week view and automatic publishing every 10 minutes.
+                  Plan your content calendar with a visual week view and automatic publishing on schedule.
                 </p>
               </CardContent>
             </Card>
@@ -74,7 +74,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        PicAI Scheduler — Built with Next.js, Supabase, and Anthropic
+        pinai — Built with Next.js, Supabase, and Anthropic
       </footer>
     </div>
   );

@@ -31,7 +31,7 @@ export function AppNavClient() {
         <div className="flex items-center gap-8">
           <Link href="/dashboard" className="flex items-center gap-2 font-bold text-primary">
             <Pin className="h-5 w-5" />
-            PicAI Scheduler
+            pinai
           </Link>
           <nav className="hidden items-center gap-1 md:flex">
             {navItems.map(({ href, label, icon: Icon }) => (

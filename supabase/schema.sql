@@ -1,4 +1,4 @@
--- PicAI Scheduler — Supabase Schema
+-- pinai — Supabase Schema
 -- Run this in the Supabase SQL Editor
 
 -- Pin status enum

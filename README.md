@@ -1,4 +1,4 @@
-# PicAI Scheduler
+# pinai
 
 AI-powered Pinterest pin scheduler. Upload or link pin images, generate SEO-optimized titles/descriptions/hashtags with Claude, and auto-publish to Pinterest at scheduled times.
 
@@ -6,7 +6,7 @@ AI-powered Pinterest pin scheduler. Upload or link pin images, generate SEO-opti
 
 - **Next.js 14** (App Router, TypeScript, Tailwind CSS, shadcn/ui)
 - **Supabase** (Postgres, Auth, Storage)
-- **Vercel Cron** (publish every 10 minutes)
+- **Vercel Cron** (daily publish on Hobby; more frequent on Pro)
 - **Anthropic API** (claude-haiku-4-5)
 - **Pinterest API v5**
 
@@ -68,9 +68,25 @@ Open [http://localhost:3000](http://localhost:3000).
 2. Add all environment variables from `.env.example`.
 3. Set `NEXT_PUBLIC_APP_URL` to your production URL.
 4. Set `PINTEREST_API_BASE` to `https://api.pinterest.com` for production.
-5. The `vercel.json` cron config runs `/api/cron/publish` every 10 minutes automatically.
+5. The `vercel.json` cron runs `/api/cron/publish` once daily (noon UTC) — the Vercel **Hobby** plan limit.
 
 > **Note:** Vercel Cron sends `Authorization: Bearer {CRON_SECRET}`. Ensure `CRON_SECRET` is set in Vercel env vars.
+
+### Cron on Hobby vs Pro
+
+| Plan | Vercel Cron limit | Default schedule |
+|---|---|---|
+| **Hobby** | Once per day | `0 12 * * *` (noon UTC) |
+| **Pro** | Any schedule | Change `vercel.json` to `*/10 * * * *` for every 10 minutes |
+
+**Hobby workaround for frequent publishing:** use a free external cron (e.g. [cron-job.org](https://cron-job.org)) to `GET` your publish endpoint every 10 minutes:
+
+```
+GET https://your-app.vercel.app/api/cron/publish
+Authorization: Bearer YOUR_CRON_SECRET
+```
+
+Each run publishes up to 50 due pins.
 
 ## Environment Variables
 
@@ -95,7 +111,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Generate All** — Batch generate metadata for all drafts with rate-limit delay
 - **Dashboard** — Filter by status, inline edit title/description, schedule pins
 - **Calendar** — Weekly grid view of scheduled pins
-- **Auto-publish** — Cron job publishes scheduled pins every 10 minutes
+- **Auto-publish** — Cron job publishes scheduled pins (daily on Vercel Hobby; every 10 min on Pro or via external cron)
 
 ## Project Structure
 

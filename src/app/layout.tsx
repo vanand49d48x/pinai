@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PicAI Scheduler — AI-Powered Pinterest Pin Scheduler",
+  title: "pinai — AI-Powered Pinterest Pin Scheduler",
   description:
     "Upload pins, generate SEO-optimized metadata with AI, and auto-publish to Pinterest on schedule.",
 };
