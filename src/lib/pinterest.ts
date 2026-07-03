@@ -3,6 +3,11 @@ import { createServiceClient } from "@/lib/supabase/service";
 import type { PinterestAccount } from "@/types/database";
 
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
+const SANDBOX_REFRESH_PLACEHOLDER = "sandbox-no-refresh";
+
+function isSandboxApi(): boolean {
+  return (process.env.PINTEREST_API_BASE || "").includes("sandbox");
+}
 
 function getPinterestApiBase(): string {
   return process.env.PINTEREST_API_BASE || "https://api.pinterest.com";
@@ -80,6 +85,12 @@ async function refreshAccessToken(refreshToken: string) {
 export async function getValidAccessToken(
   account: PinterestAccount
 ): Promise<string> {
+  const refreshToken = decrypt(account.refresh_token);
+
+  if (refreshToken === SANDBOX_REFRESH_PLACEHOLDER) {
+    return decrypt(account.access_token);
+  }
+
   const expiresAt = new Date(account.token_expires_at).getTime();
   const now = Date.now();
 
@@ -87,7 +98,6 @@ export async function getValidAccessToken(
     return decrypt(account.access_token);
   }
 
-  const refreshToken = decrypt(account.refresh_token);
   const tokens = await refreshAccessToken(refreshToken);
 
   const newExpiresAt = new Date(
@@ -146,6 +156,39 @@ export async function syncBoards(userId: string, accessToken: string) {
   }
 
   return data.items.length;
+}
+
+export async function connectSandboxAccount(userId: string) {
+  const accessToken = process.env.PINTEREST_SANDBOX_ACCESS_TOKEN;
+  if (!accessToken) {
+    throw new Error("PINTEREST_SANDBOX_ACCESS_TOKEN is not configured");
+  }
+
+  if (!isSandboxApi()) {
+    throw new Error("Sandbox token connect requires PINTEREST_API_BASE sandbox URL");
+  }
+
+  const pinterestUser = await getPinterestUser(accessToken);
+  const tokenExpiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+  const supabase = createServiceClient();
+  await supabase.from("pinterest_accounts").upsert(
+    {
+      user_id: userId,
+      access_token: encrypt(accessToken),
+      refresh_token: encrypt(SANDBOX_REFRESH_PLACEHOLDER),
+      token_expires_at: tokenExpiresAt,
+      pinterest_username: pinterestUser.username ?? "sandbox",
+    },
+    { onConflict: "user_id" }
+  );
+
+  const boardCount = await syncBoards(userId, accessToken);
+  return { username: pinterestUser.username ?? "sandbox", boardCount };
+}
+
+export function isSandboxTokenConfigured(): boolean {
+  return Boolean(process.env.PINTEREST_SANDBOX_ACCESS_TOKEN) && isSandboxApi();
 }
 
 export interface PublishPinInput {

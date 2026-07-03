@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isSandboxTokenConfigured } from "@/lib/pinterest";
 
 export async function GET() {
   const supabase = await createClient();
@@ -26,5 +27,6 @@ export async function GET() {
   return NextResponse.json({
     account: account ?? null,
     boards: boards ?? [],
+    sandboxConnectAvailable: isSandboxTokenConfigured(),
   });
 }

@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "pinai — AI-Powered Pinterest Pin Scheduler",
   description:
     "Upload pins, generate SEO-optimized metadata with AI, and auto-publish to Pinterest on schedule.",
+  applicationName: "pinai",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({

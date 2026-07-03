@@ -17,6 +17,8 @@ export default function SettingsContent() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [connectingSandbox, setConnectingSandbox] = useState(false);
+  const [sandboxAvailable, setSandboxAvailable] = useState(false);
 
   useEffect(() => {
     const connected = searchParams.get("connected");
@@ -33,6 +35,7 @@ export default function SettingsContent() {
         const data = await res.json();
         setAccount(data.account);
         setBoards(data.boards ?? []);
+        setSandboxAvailable(Boolean(data.sandboxConnectAvailable));
       }
       setLoading(false);
     }
@@ -56,6 +59,28 @@ export default function SettingsContent() {
     const statusRes = await fetch("/api/pinterest/status");
     if (statusRes.ok) {
       const statusData = await statusRes.json();
+      setBoards(statusData.boards ?? []);
+    }
+  }
+
+  async function handleConnectSandbox() {
+    setConnectingSandbox(true);
+    const res = await fetch("/api/pinterest/connect-sandbox", { method: "POST" });
+    setConnectingSandbox(false);
+
+    if (!res.ok) {
+      const data = await res.json();
+      toast.error(data.error ?? "Sandbox connect failed");
+      return;
+    }
+
+    const data = await res.json();
+    toast.success(`Connected sandbox (@${data.username}, ${data.boardCount} boards)`);
+
+    const statusRes = await fetch("/api/pinterest/status");
+    if (statusRes.ok) {
+      const statusData = await statusRes.json();
+      setAccount(statusData.account);
       setBoards(statusData.boards ?? []);
     }
   }
@@ -110,9 +135,24 @@ export default function SettingsContent() {
                   </div>
                 </>
               ) : (
-                <Button asChild>
-                  <a href="/api/pinterest/authorize">Connect Pinterest</a>
-                </Button>
+                <div className="space-y-3">
+                  {sandboxAvailable && (
+                    <Button
+                      onClick={handleConnectSandbox}
+                      disabled={connectingSandbox}
+                    >
+                      {connectingSandbox ? "Connecting..." : "Connect Sandbox Token"}
+                    </Button>
+                  )}
+                  <Button variant={sandboxAvailable ? "outline" : "default"} asChild>
+                    <a href="/api/pinterest/authorize">Connect via OAuth</a>
+                  </Button>
+                  {sandboxAvailable && (
+                    <p className="text-xs text-muted-foreground">
+                      Sandbox token is configured server-side. Use this for testing without OAuth.
+                    </p>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
