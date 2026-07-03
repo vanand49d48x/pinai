@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getPinterestAuthorizeUrl } from "@/lib/pinterest";
 import { randomBytes } from "crypto";
+import { BillingLimitError, limitErrorResponse, requireWithinLimits } from "@/lib/billing";
 
 export async function GET() {
   const supabase = await createClient();
@@ -11,6 +12,15 @@ export async function GET() {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await requireWithinLimits(user.id, "connect_pinterest");
+  } catch (err) {
+    if (err instanceof BillingLimitError) {
+      return limitErrorResponse(err);
+    }
+    throw err;
   }
 
   const state = randomBytes(32).toString("hex");

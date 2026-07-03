@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { billingFetch } from "@/components/billing/billing-provider";
 import Papa from "papaparse";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -91,7 +92,7 @@ export function BulkImport() {
       scheduled_at: row.scheduled_at?.trim() || null,
     }));
 
-    const res = await fetch("/api/pins/bulk", {
+    const res = await billingFetch("/api/pins/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pins }),
@@ -118,7 +119,7 @@ export function BulkImport() {
 
     for (let i = 0; i < importedIds.length; i++) {
       setGenProgress({ current: i + 1, total: importedIds.length });
-      await fetch(`/api/pins/${importedIds[i]}/generate`, { method: "POST" });
+      await billingFetch(`/api/pins/${importedIds[i]}/generate`, { method: "POST" });
       if (i < importedIds.length - 1) await new Promise((r) => setTimeout(r, 1500));
     }
 

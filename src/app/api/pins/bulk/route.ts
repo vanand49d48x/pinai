@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { bulkPinSchema } from "@/lib/validations";
+import {
+  BillingLimitError,
+  incrementUsage,
+  limitErrorResponse,
+  requireWithinLimits,
+} from "@/lib/billing";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -20,6 +26,15 @@ export async function POST(request: NextRequest) {
       { error: "Validation failed", details: parsed.error.flatten() },
       { status: 400 }
     );
+  }
+
+  try {
+    await requireWithinLimits(user.id, "bulk_csv", {
+      bulkCount: parsed.data.pins.length,
+    });
+  } catch (err) {
+    if (err instanceof BillingLimitError) return limitErrorResponse(err);
+    throw err;
   }
 
   const { data: boards } = await supabase
@@ -65,6 +80,8 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await incrementUsage(user.id, "pins_created", data.length);
 
   return NextResponse.json({ pins: data, count: data.length }, { status: 201 });
 }

@@ -5,6 +5,7 @@ import {
   isRateLimitError,
   publishPinToPinterest,
 } from "@/lib/pinterest";
+import { isPublishingBlocked } from "@/lib/billing";
 import type { PinterestAccount, Pin } from "@/types/database";
 
 export async function GET(request: NextRequest) {
@@ -49,6 +50,27 @@ export async function GET(request: NextRequest) {
 
     if (!locked) {
       results.push({ id: pin.id, status: "skipped", error: "Already processing" });
+      continue;
+    }
+
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("status, current_period_end")
+      .eq("user_id", pin.user_id)
+      .maybeSingle();
+
+    if (
+      sub &&
+      isPublishingBlocked(sub.status, sub.current_period_end)
+    ) {
+      await supabase
+        .from("pins")
+        .update({
+          status: "failed",
+          error_message: "Subscription canceled — renew to publish",
+        })
+        .eq("id", pin.id);
+      results.push({ id: pin.id, status: "skipped", error: "Subscription ended" });
       continue;
     }
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/pins/status-badge";
+import { billingFetch } from "@/components/billing/billing-provider";
 import type { PinWithBoard } from "@/types/database";
 
 interface PinTableProps {
@@ -49,7 +50,7 @@ export function PinTable({ initialPins, onRefresh, highlightId }: PinTableProps)
       prev.map((p) => (p.id === id ? { ...p, status: "generating" as const } : p))
     );
 
-    const res = await fetch(`/api/pins/${id}/generate`, { method: "POST" });
+    const res = await billingFetch(`/api/pins/${id}/generate`, { method: "POST" });
 
     if (!res.ok) {
       const data = await res.json();

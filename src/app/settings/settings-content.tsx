@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { RefreshCw, Unlink, User } from "lucide-react";
+import { RefreshCw, Unlink } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -199,17 +200,21 @@ export default function SettingsContent() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" /> Account
-              </CardTitle>
+              <CardTitle>Account</CardTitle>
+              <CardDescription>Email and account management</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm">
                 Signed in as <strong>{email ?? "—"}</strong>
               </p>
-              <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-                Delete account
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" asChild>
+                  <Link href="/settings/billing">Billing & usage</Link>
+                </Button>
+                <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+                  Delete account
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

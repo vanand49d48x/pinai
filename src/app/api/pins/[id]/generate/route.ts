@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generatePinMetadata } from "@/lib/anthropic";
+import {
+  BillingLimitError,
+  incrementUsage,
+  limitErrorResponse,
+  requireWithinLimits,
+} from "@/lib/billing";
 
 export async function POST(
   _request: NextRequest,
@@ -34,6 +40,13 @@ export async function POST(
     );
   }
 
+  try {
+    await requireWithinLimits(user.id, "generate_ai");
+  } catch (err) {
+    if (err instanceof BillingLimitError) return limitErrorResponse(err);
+    throw err;
+  }
+
   await supabase
     .from("pins")
     .update({ status: "generating" })
@@ -62,6 +75,8 @@ export async function POST(
     if (updateError) {
       throw new Error(updateError.message);
     }
+
+    await incrementUsage(user.id, "ai_generations");
 
     return NextResponse.json({ pin: updated });
   } catch (err) {

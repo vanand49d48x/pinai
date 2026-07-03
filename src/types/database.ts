@@ -50,3 +50,26 @@ export interface Pin {
 export interface PinWithBoard extends Pin {
   boards: Pick<Board, "id" | "name"> | null;
 }
+
+export type SubscriptionPlan = "free" | "starter" | "pro";
+export type SubscriptionStatus = "active" | "past_due" | "canceled" | "trialing";
+
+export interface Subscription {
+  user_id: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  current_period_end: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UsageCounter {
+  user_id: string;
+  period_start: string;
+  pins_created: number;
+  ai_generations: number;
+  pins_warning_sent: boolean;
+  ai_warning_sent: boolean;
+}

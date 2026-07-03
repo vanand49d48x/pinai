@@ -20,6 +20,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinPreview } from "@/components/pins/pin-preview";
 import { CharCounter, isOverLimit } from "@/components/pins/char-counter";
+import { billingFetch } from "@/components/billing/billing-provider";
 import { createClient } from "@/lib/supabase/client";
 import type { Board } from "@/types/database";
 
@@ -110,7 +111,7 @@ export function NewPinForm({ boards, userId, pinterestConnected }: NewPinFormPro
   async function ensureDraftPin(): Promise<string> {
     if (pinId) return pinId;
 
-    const res = await fetch("/api/pins", {
+    const res = await billingFetch("/api/pins", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -138,7 +139,7 @@ export function NewPinForm({ boards, userId, pinterestConnected }: NewPinFormPro
     setGenerating(true);
     try {
       const id = await ensureDraftPin();
-      const res = await fetch(`/api/pins/${id}/generate`, { method: "POST" });
+      const res = await billingFetch(`/api/pins/${id}/generate`, { method: "POST" });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error ?? "Generation failed");
@@ -181,7 +182,7 @@ export function NewPinForm({ boards, userId, pinterestConnected }: NewPinFormPro
 
       let id = pinId;
       if (id) {
-        const res = await fetch(`/api/pins/${id}`, {
+        const res = await billingFetch(`/api/pins/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -191,7 +192,7 @@ export function NewPinForm({ boards, userId, pinterestConnected }: NewPinFormPro
           throw new Error(data.error ?? "Failed to save pin");
         }
       } else {
-        const res = await fetch("/api/pins", {
+        const res = await billingFetch("/api/pins", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
