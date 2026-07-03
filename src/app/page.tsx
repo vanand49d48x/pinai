@@ -74,7 +74,12 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        pinai — Built with Next.js, Supabase, and Anthropic
+        <p>pinai — Built with Next.js, Supabase, and Anthropic</p>
+        <p className="mt-2">
+          <Link href="/privacy" className="text-primary hover:underline">
+            Privacy Policy
+          </Link>
+        </p>
       </footer>
     </div>
   );
